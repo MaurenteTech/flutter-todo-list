@@ -1,33 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 class Todo {
+  final int id;
   final String title;
   final String description;
 
-  const Todo(this.title, this.description);
+  Todo({
+    required this.id,
+    required this.title,
+    required this.description,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+    };
+  }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final database = await openDatabase(
+    join(await getDatabasesPath(), 'todo_database.db'),
+    onCreate: (db, version) {
+      return db.execute(
+        'CREATE TABLE todos(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT)',
+      );
+    },
+    version: 1,
+  );
+
   runApp(
     MaterialApp(
       title: 'Passing Data',
-      home: TodosScreen(
-        todos: List.generate(
-          20,
-          (i) => Todo(
-            'Todo $i',
-            'A description of what needs to be done for Todo $i',
-          ),
-        ),
-      ),
+      home: TodosScreen(database: database),
     ),
   );
 }
 
-class TodosScreen extends StatelessWidget {
-  const TodosScreen({super.key, required this.todos});
+class TodosScreen extends StatefulWidget {
+  final Database database;
 
-  final List<Todo> todos;
+  TodosScreen({required this.database});
+
+  @override
+  _TodosScreenState createState() => _TodosScreenState();
+}
+
+class _TodosScreenState extends State<TodosScreen> {
+  List<Todo> todos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTodos();
+  }
+
+  void fetchTodos() async {
+    final List<Map<String, dynamic>> maps =
+        await widget.database.query('todos');
+
+    setState(() {
+      todos = List.generate(
+        maps.length,
+        (index) {
+          return Todo(
+            id: maps[index]['id'],
+            title: maps[index]['title'],
+            description: maps[index]['description'],
+          );
+        },
+      );
+    });
+  }
+
+  void addTodo() async {
+    final newTodo = Todo(
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: 'New Todo',
+      description: 'A description for the new todo',
+    );
+
+    await widget.database.insert(
+      'todos',
+      newTodo.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    fetchTodos();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,37 +105,32 @@ class TodosScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           return ListTile(
             title: Text(todos[index].title),
-            // When a user taps the ListTile, navigate to the DetailScreen.
-            // Notice that you're not only creating a DetailScreen, you're
-            // also passing the current todo through to it.
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const DetailScreen(),
-                  // Pass the arguments as part of the RouteSettings. The
-                  // DetailScreen reads the arguments from these settings.
-                  settings: RouteSettings(
-                    arguments: todos[index],
-                  ),
+                  builder: (context) => DetailScreen(todo: todos[index]),
                 ),
               );
             },
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: addTodo,
+        child: Icon(Icons.add),
+      ),
     );
   }
 }
 
 class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+  final Todo todo;
+
+  DetailScreen({required this.todo});
 
   @override
   Widget build(BuildContext context) {
-    final todo = ModalRoute.of(context)!.settings.arguments as Todo;
-
-    // Use the Todo to create the UI.
     return Scaffold(
       appBar: AppBar(
         title: Text(todo.title),
