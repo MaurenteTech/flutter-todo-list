@@ -202,7 +202,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         TextEditingController(text: widget.todo.description);
     _itemCountController =
         TextEditingController(text: widget.todo.itemCount.toString());
-    _itemCountIntervalController = TextEditingController(text: '');
+    _itemCountIntervalController =
+        TextEditingController(text: widget.todo.itemCountInterval.toString());
     _editMode = false;
   }
 
@@ -265,7 +266,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         title: const Text('Todo Details'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -280,7 +281,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               controller: _titleController,
               enabled: _editMode,
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 8.0),
             const Text(
               'Description:',
               style: TextStyle(
@@ -291,9 +292,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             TextField(
               controller: _descriptionController,
               enabled: _editMode,
-              maxLines: 3,
+              maxLines: 1,
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 8.0),
             const Text(
               'Item Count:',
               style: TextStyle(
@@ -306,7 +307,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               enabled: _editMode,
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 8.0),
             const Text(
               'Item Count Interval:',
               style: TextStyle(
@@ -319,7 +320,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               enabled: _editMode,
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 8.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -333,7 +334,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 8.0),
             ElevatedButton(
               onPressed: _editMode ? _updateTodo : _toggleEditMode,
               child: Text(_editMode ? 'Save' : 'Edit'),
