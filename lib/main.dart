@@ -321,23 +321,37 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: _decreaseItemCount,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: _increaseItemCount,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8.0),
             ElevatedButton(
               onPressed: _editMode ? _updateTodo : _toggleEditMode,
               child: Text(_editMode ? 'Save' : 'Edit'),
+            ),
+            const SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).accentColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.remove),
+                    color: Colors.white,
+                    onPressed: _decreaseItemCount,
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).accentColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.add),
+                    color: Colors.white,
+                    onPressed: _increaseItemCount,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
