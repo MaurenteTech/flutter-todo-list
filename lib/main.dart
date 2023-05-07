@@ -160,8 +160,6 @@ class _TodosScreenState extends State<TodosScreen> {
                   builder: (context) => TodoDetailScreen(
                     todo: _todos[index],
                     database: widget.database,
-                    onDelete: () => _deleteTodo(_todos[index]),
-                    onUpdate: _updateTodo,
                   ),
                 ),
               );
@@ -180,16 +178,8 @@ class _TodosScreenState extends State<TodosScreen> {
 class TodoDetailScreen extends StatefulWidget {
   final Todo todo;
   final Database database;
-  final VoidCallback onDelete;
-  final Function(Todo) onUpdate;
 
-  const TodoDetailScreen({
-    Key? key,
-    required this.todo,
-    required this.database,
-    required this.onDelete,
-    required this.onUpdate,
-  }) : super(key: key);
+  TodoDetailScreen({required this.todo, required this.database});
 
   @override
   _TodoDetailScreenState createState() => _TodoDetailScreenState();
@@ -200,6 +190,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late TextEditingController _descriptionController;
   late TextEditingController _itemCountController;
   late TextEditingController _itemCountIntervalController;
+  late bool _editMode;
+
+  List<Todo> _todos = [];
 
   @override
   void initState() {
@@ -209,8 +202,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         TextEditingController(text: widget.todo.description);
     _itemCountController =
         TextEditingController(text: widget.todo.itemCount.toString());
-    _itemCountIntervalController =
-        TextEditingController(text: widget.todo.itemCountInterval.toString());
+    _itemCountIntervalController = TextEditingController(text: '');
+    _editMode = false;
   }
 
   @override
@@ -222,65 +215,128 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     super.dispose();
   }
 
-  void _updateTodo() {
+  void _toggleEditMode() {
+    setState(() {
+      _editMode = !_editMode;
+    });
+  }
+
+  void _decreaseItemCount() {
+    setState(() {
+      widget.todo.itemCount -= widget.todo.itemCountInterval;
+      _itemCountController.text = widget.todo.itemCount.toString();
+    });
+  }
+
+  void _increaseItemCount() {
+    setState(() {
+      widget.todo.itemCount += widget.todo.itemCountInterval;
+      _itemCountController.text = widget.todo.itemCount.toString();
+    });
+  }
+
+  Future<void> _updateTodo() async {
     final updatedTodo = widget.todo.copyWith(
       title: _titleController.text,
       description: _descriptionController.text,
       itemCount: int.parse(_itemCountController.text),
       itemCountInterval: int.parse(_itemCountIntervalController.text),
     );
-    widget.onUpdate(updatedTodo);
-    Navigator.pop(this.context);
-  }
 
-  void _deleteTodo() {
-    widget.onDelete();
-    Navigator.pop(this.context);
+    await widget.database.update(
+      'todos',
+      updatedTodo.toMap(),
+      where: 'id = ?',
+      whereArgs: [updatedTodo.id],
+    );
+
+    setState(() {
+      _todos = _todos.map((todo) {
+        return todo.id == updatedTodo.id ? updatedTodo : todo;
+      }).toList();
+      _editMode = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.todo.title),
+        title: const Text('Todo Details'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextFormField(
+            const Text(
+              'Title:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
+              enabled: _editMode,
             ),
-            TextFormField(
+            const SizedBox(height: 16.0),
+            const Text(
+              'Description:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            TextField(
               controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
+              enabled: _editMode,
+              maxLines: 3,
             ),
-            TextFormField(
+            const SizedBox(height: 16.0),
+            const Text(
+              'Item Count:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            TextField(
               controller: _itemCountController,
+              enabled: _editMode,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Item Count'),
             ),
-            TextFormField(
+            const SizedBox(height: 16.0),
+            const Text(
+              'Item Count Interval:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            TextField(
               controller: _itemCountIntervalController,
+              enabled: _editMode,
               keyboardType: TextInputType.number,
-              decoration:
-                  const InputDecoration(labelText: 'Item Count Interval'),
             ),
             const SizedBox(height: 16.0),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ElevatedButton(
-                  onPressed: _updateTodo,
-                  child: const Text('Update'),
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  onPressed: _decreaseItemCount,
                 ),
-                ElevatedButton(
-                  onPressed: _deleteTodo,
-                  child: const Text('Delete'),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: _increaseItemCount,
                 ),
               ],
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: _editMode ? _updateTodo : _toggleEditMode,
+              child: Text(_editMode ? 'Save' : 'Edit'),
             ),
           ],
         ),
