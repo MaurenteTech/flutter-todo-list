@@ -1,12 +1,30 @@
 # list_app_flutter
 
-A new Flutter project.
+An ios app built using flutter. It uses sqflite for persistance. 
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## Features
+- Create new tasks with a title, description, and item count, and item count interval.
+- Edit task details including the title, description, item count, and item count interval.
+- Mark tasks as completed or uncompleted.
+- Increase or decrease the item count of a task.
 
-A few resources to get you started if this is your first Flutter project:
+## Installation
+
+1. Clone the repository: `git clone https://github.com/your/repository.git`
+2. Change to the project directory: `cd todo_app`
+3. Install the dependencies: `flutter pub get`
+4. Run the app: `flutter run`
+
+## Screenshots 
+
+![Screenshot 1](screenshots/screenshot1.png)
+![Screenshot 1](screenshots/screenshot1.png)
+![Screenshot 1](screenshots/screenshot1.png)
+
+## More info
+
+Check these links out for information about flutter
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
 - [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)

@@ -77,7 +77,6 @@ class Todo {
 
 class TodosScreen extends StatefulWidget {
   final Database database;
-
   const TodosScreen({Key? key, required this.database}) : super(key: key);
 
   @override
@@ -139,6 +138,23 @@ class _TodosScreenState extends State<TodosScreen> {
     });
   }
 
+  void _navigateToTodoDetailScreen(Todo todo) async {
+    final updatedTodo = await Navigator.push<Todo>(
+      this.context,
+      MaterialPageRoute(
+        builder: (context) =>
+            TodoDetailScreen(todo: todo, database: widget.database),
+      ),
+    );
+    if (updatedTodo != null) {
+      setState(() {
+        _todos = _todos.map((existingTodo) {
+          return existingTodo.id == updatedTodo.id ? updatedTodo : existingTodo;
+        }).toList();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,17 +166,7 @@ class _TodosScreenState extends State<TodosScreen> {
         itemBuilder: (context, index) {
           return ListTile(
             title: Text(_todos[index].title),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TodoDetailScreen(
-                    todo: _todos[index],
-                    database: widget.database,
-                  ),
-                ),
-              );
-            },
+            onTap: () => _navigateToTodoDetailScreen(_todos[index]),
           );
         },
       ),
@@ -173,7 +179,7 @@ class _TodosScreenState extends State<TodosScreen> {
 }
 
 class TodoDetailScreen extends StatefulWidget {
-  final Todo todo;
+  Todo todo;
   final Database database;
 
   TodoDetailScreen({required this.todo, required this.database});
@@ -233,27 +239,22 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     });
   }
 
-  Future<void> _updateTodo() async {
-    final updatedTodo = widget.todo.copyWith(
-      title: _titleController.text,
-      description: _descriptionController.text,
-      itemCount: int.parse(_itemCountController.text),
-      itemCountInterval: int.parse(_itemCountIntervalController.text),
-    );
+  void _updateTodo() async {
+    widget.todo.title = _titleController.text;
+    widget.todo.description = _descriptionController.text;
+    widget.todo.itemCount = int.parse(_itemCountController.text);
+    widget.todo.itemCountInterval =
+        int.parse(_itemCountIntervalController.text);
 
     await widget.database.update(
       'todos',
-      updatedTodo.toMap(),
+      widget.todo.toMap(),
       where: 'id = ?',
-      whereArgs: [updatedTodo.id],
+      whereArgs: [widget.todo.id],
     );
 
-    setState(() {
-      _todos = _todos.map((todo) {
-        return todo.id == updatedTodo.id ? updatedTodo : todo;
-      }).toList();
-      _editMode = false;
-    });
+    Navigator.pop(
+        this.context, widget.todo); // Pass the updated todo back to TodosScreen
   }
 
   @override
