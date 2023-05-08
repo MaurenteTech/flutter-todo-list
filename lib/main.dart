@@ -5,9 +5,6 @@ import 'package:path/path.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final databasePath = join(await getDatabasesPath(), 'todo_database.db');
-  await deleteDatabase(databasePath);
-
   final database = await openDatabase(
     join(await getDatabasesPath(), 'todo_database.db'),
     onCreate: (db, version) {
