@@ -18,9 +18,8 @@ An ios app built using flutter. It uses sqflite for persistance.
 
 ## Screenshots 
 
-![Screenshot 1](screenshots/screenshot1.png)
-![Screenshot 1](screenshots/screenshot1.png)
-![Screenshot 1](screenshots/screenshot1.png)
+![Screenshot 1](screenshots/TodosScreen.png)
+![Screenshot 2](screenshots/TodoDetailScreen.png)
 
 ## More info
 
